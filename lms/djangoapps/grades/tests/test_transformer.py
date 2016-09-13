@@ -7,6 +7,7 @@ import pytz
 import random
 
 import ddt
+from path import Path
 
 from student.tests.factories import UserFactory
 from xmodule.modulestore import ModuleStoreEnum
@@ -353,7 +354,7 @@ class GradesTransformerTestCase(CourseStructureTestCase):
 
     @ddt.data(
         (u'problem', u'capa.xml'),
-        (u'openresponse', u'openresponse.xml'),
+        (u'openassessment', u'openassessment.xml'),
     )
     @ddt.unpack
     def test_different_problem_types(self, block_type, filename):

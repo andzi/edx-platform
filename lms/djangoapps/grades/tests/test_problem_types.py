@@ -6,21 +6,9 @@ from path import Path
 import ddt
 from django.test import TestCase
 
-from student.tests.factories import CourseEnrollmentFactory, UserFactory, CourseFactory
-
-class MyModuleStoreTestCase(SharedModuleStoreTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(MyModuleStoreTestCase, cls).setUpClass()
-        cls.course = CourseFactory.create()
-
-    def setUp(self):
-        super(MyModuleStoreTestCase, self).setUp()
-        self.user = UserFactory.create()
-        CourseEnrollmentFactory.create(
-            user=self.user, course_id=self.course.id
-        )
-from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
+from student.tests.factories import CourseEnrollmentFactory, UserFactory
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
 
 
 TEST_DATA_DIR = Path(__file__).dirname() / 'data'  # pylint: disable=invalid-name
