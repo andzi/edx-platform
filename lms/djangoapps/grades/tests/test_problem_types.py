@@ -6,7 +6,21 @@ from path import Path
 import ddt
 from django.test import TestCase
 
-from xmodule.modulestore.xml_importer import import_course_from_xml
+from student.tests.factories import CourseEnrollmentFactory, UserFactory, CourseFactory
+
+class MyModuleStoreTestCase(SharedModuleStoreTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(MyModuleStoreTestCase, cls).setUpClass()
+        cls.course = CourseFactory.create()
+
+    def setUp(self):
+        super(MyModuleStoreTestCase, self).setUp()
+        self.user = UserFactory.create()
+        CourseEnrollmentFactory.create(
+            user=self.user, course_id=self.course.id
+        )
+from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 
 
 TEST_DATA_DIR = Path(__file__).dirname() / 'data'  # pylint: disable=invalid-name
@@ -24,24 +38,11 @@ class TestGradingProblemTypes(TestCase):
     )
     def test_save_grades_by_block_type(self, problem_file):
         course_key = 'x'
-
-        course_xml = u"""
-        <course>
-          <chapter>
-            <sequence>
-              <vertical>
-                {problem_data}
-              </vertical>
-            </sequence>
-          </chapter>
-        </course>
-        """.format(problem_data=open(TEST_DATA_DIR / problem_data).read())
-
         import_course_from_xml(
             self.store,
             'test_user',
             TEST_DATA_DIR,
-            source_dirs=['2014'],
+            source_dirs=[problem_file],
             static_content_store=None,
             target_id=course_key,
             raise_on_failure=True,

@@ -6,6 +6,8 @@ import datetime
 import pytz
 import random
 
+import ddt
+
 from student.tests.factories import UserFactory
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
@@ -17,6 +19,7 @@ from openedx.core.djangoapps.content.block_structure.api import get_cache
 from ..transformer import GradesTransformer
 
 
+@ddt.ddt
 class GradesTransformerTestCase(CourseStructureTestCase):
     """
     Verify behavior of the GradesTransformer
@@ -100,6 +103,51 @@ class GradesTransformerTestCase(CourseStructureTestCase):
                     }
                 ]
             }
+        ])
+
+    def build_course_with_block_from_file(self, block_type, filename, metadata=None):
+        metadata = metadata or self.problem_metadata
+        filepath = Path(__file__).dirname() / 'data' / filename
+        data = open(filepath).read()
+
+        # Special structure-related keys start with '#'.  The rest get passed as
+        # kwargs to Factory.create.  See docstring at
+        # `CourseStructureTestCase.build_course` for details.
+        return self.build_course([
+            {
+                u'org': u'GradesTestOrg',
+                u'course': u'GB101',
+                u'run': u'cannonball',
+                u'metadata': {u'format': u'homework'},
+                u'#type': u'course',
+                u'#ref': u'course',
+                u'#children': [
+                    {
+                        u'#type': u'chapter',
+                        u'#ref': u'chapter',
+                        u'#children': [
+                            {
+                                u'#type': u'sequential',
+                                u'#ref': 'sequential',
+                                u'#children': [
+                                    {
+                                        u'#type': u'vertical',
+                                        u'#ref': u'vertical',
+                                        u'#children': [
+                                            {
+                                                u'metadata': metadata,
+                                                u'#type': block_type,
+                                                u'#ref': u'problem',
+                                                u'data': data,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
         ])
 
     def build_complicated_hypothetical_course(self):
@@ -303,6 +351,15 @@ class GradesTransformerTestCase(CourseStructureTestCase):
         block_structure = get_course_blocks(self.student, blocks[u'course'].location, self.transformers)
         self.assertIsNotNone(block_structure.get_xblock_field(blocks[u'course'].location, u'course_version'))
 
+    @ddt.data(
+        (u'problem', u'capa.xml'),
+        (u'openresponse', u'openresponse.xml'),
+    )
+    @ddt.unpack
+    def test_different_problem_types(self, block_type, filename):
+        blocks = self.build_course_with_block_from_file(block_type, filename)
+        block_structure = get_course_blocks(self.student, blocks[u'course'].location, self.transformers)
+
 
 class MultiProblemModulestoreAccessTestCase(CourseStructureTestCase, SharedModuleStoreTestCase):
     """
@@ -355,3 +412,4 @@ class MultiProblemModulestoreAccessTestCase(CourseStructureTestCase, SharedModul
         get_cache().clear()
         with check_mongo_calls(2):
             get_course_blocks(self.student, blocks[u'course'].location, self.transformers)
+
