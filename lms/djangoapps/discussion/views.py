@@ -84,7 +84,6 @@ def get_threads(request, course, user_info, discussion_id=None, per_page=THREADS
         'page': 1,
         'per_page': per_page,
         'sort_key': 'activity',
-        'sort_order': 'desc',
         'text': '',
         'course_id': unicode(course.id),
         'user_id': request.user.id,
@@ -122,7 +121,6 @@ def get_threads(request, course, user_info, discussion_id=None, per_page=THREADS
                 [
                     'page',
                     'sort_key',
-                    'sort_order',
                     'text',
                     'commentable_ids',
                     'flagged',
@@ -483,7 +481,6 @@ def followed_threads(request, course_key, user_id):
             'page': 1,
             'per_page': THREADS_PER_PAGE,   # more than threads_per_page to show more activities
             'sort_key': 'date',
-            'sort_order': 'desc',
         }
 
         query_params = merge_dict(
@@ -494,7 +491,6 @@ def followed_threads(request, course_key, user_id):
                     [
                         'page',
                         'sort_key',
-                        'sort_order',
                         'flagged',
                         'unread',
                         'unanswered',
