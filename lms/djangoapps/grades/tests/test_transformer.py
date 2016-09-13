@@ -355,6 +355,8 @@ class GradesTransformerTestCase(CourseStructureTestCase):
     @ddt.data(
         (u'problem', u'capa.xml'),
         (u'openassessment', u'openassessment.xml'),
+        (u'coderesponse', u'coderesponse.xml'),
+        (u'lti', u'lti.xml'),
     )
     @ddt.unpack
     def test_different_problem_types(self, block_type, filename):
