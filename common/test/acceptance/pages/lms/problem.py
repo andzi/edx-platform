@@ -141,26 +141,22 @@ class ProblemPage(PageObject):
         """
         return self.q(css='.notification.warning.notification-save').visible
 
-    def wait_for_save_notification_visible(self):
+    def wait_for_save_notification(self):
         """
         Wait for the Save Notification to be present
         """
         self.wait_for_element_visibility('.notification.warning.notification-save',
                                          'Waiting for Save notification to be visible')
+        self.wait_for(lambda: self.q(css='.notification.warning.notification-save').focused,
+                      'Waiting for the focus to be on the save notification')
 
     def is_reset_button_present(self):
         """ Check for the presence of the reset button. """
         return self.q(css='.problem .reset').present
 
-    def is_save_notification_focused(self):
-        """
-        Is the Save Notification focused?
-        """
-        return self.q(css='.notification.warning.notification-save').focused
-
-    def is_save_button_visible_disabled(self):
-        """ Check for the visibility of the disabled Save button """
-        return self.q(css='.problem .save.is-disabled').visible
+    def is_save_button_enabled(self):
+        """ Check for the visibility of the Save button """
+        return not self.q(css='.problem .submit').attrs('disabled')
 
     def is_focus_on_problem_meta(self):
         """

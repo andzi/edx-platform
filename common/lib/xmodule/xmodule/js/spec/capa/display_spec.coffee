@@ -739,9 +739,7 @@ describe 'Problem', ->
           deferred.resolve()
         deferred.promise()
 
-      runs.call(this).then(->
-        return
-      ).always done
+      runs.call(this).always done
 
     it 'tests if all the buttons are disabled and the text of submit button does not change while saving.', (done) ->
       deferred = $.Deferred()

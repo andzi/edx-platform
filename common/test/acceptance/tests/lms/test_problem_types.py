@@ -272,13 +272,12 @@ class ProblemTypeTestMixin(object):
         )
         self.problem_page.wait_for_page()
         self.answer_problem(correctness='correct')
-        self.assertFalse(self.problem_page.is_save_button_visible_disabled())
+        self.assertTrue(self.problem_page.is_save_button_enabled())
         self.problem_page.click_save()
-        self.problem_page.wait_for_save_notification_visible()
-        self.assertTrue(self.problem_page.is_save_notification_focused())
-        self.assertFalse(self.problem_page.is_save_button_visible_disabled())
+        self.problem_page.wait_for_save_notification()
+        self.assertTrue(self.problem_page.is_save_button_enabled())
         self.answer_problem(correctness='incorrect')
-        self.assertFalse(self.problem_page.is_save_button_visible_disabled())
+        self.assertTrue(self.problem_page.is_save_button_enabled())
         if self.can_update_save_notification:
             # Not all problems will detect the change and remove the save notification
             self.assertFalse(self.problem_page.is_save_notification_visible())

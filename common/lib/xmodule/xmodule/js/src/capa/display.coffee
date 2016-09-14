@@ -41,9 +41,9 @@ class @Problem
     @resetButton.click @reset
     @showButton = @$('.action .show')
     @showButton.click @show
-    @saveButton = @$('.problem .problem-action-buttons-wrapper .save')
-    @saveNotificationArea = @$('.notification.warning.notification-save')
-    @saveButtonLabel = @$('.problem .problem-action-buttons-wrapper .save .save-label')
+    @saveButton = @$('.action .save')
+    @saveNotification = @$('.notification-save')
+    @saveButtonLabel = @$('.action .save .save-label')
     @saveButton.click @save
 
     # Accessibility helper for sighted keyboard users to show <clarification> tooltips on focus:
@@ -446,8 +446,8 @@ class @Problem
       @disableAllButtonsWhileRunning @save_internal, false
 
   focus_on_save_notification: =>
-    if @saveNotificationArea.length > 0
-      @saveNotificationArea.focus()
+    if @saveNotification.length > 0
+      @saveNotification.focus()
 
   save_internal: =>
     Logger.log 'problem_save', @answers
@@ -493,11 +493,17 @@ class @Problem
     @answers = @inputs.serialize()
 
   submitAnswersAndSubmitButton: (bind=false, data_changed=false) =>
-    # Used to check available answers and if something is checked (or the answer is set in some textbox)
-    # "Submit" button becomes enabled. Otherwise it is disabled by default.
-    # params:
-    #   'bind' used on the first check to attach event handlers to input fields
-    #     to change "Submit" enable status in case of some manipulations with answers
+    """
+    Used to check available answers and if something is checked (or the answer is set in some textbox)
+    "Submit" button becomes enabled. Otherwise it is disabled by default.
+
+    Arguments:
+      bind (bool): used on the first check to attach event handlers to input fields
+       to change "Submit" enable status in case of some manipulations with answers
+
+      data_changed (bool): True when a change in the problem entry fields is detected.
+    """
+
     answered = true
 
     at_least_one_text_input_found = false
@@ -542,7 +548,7 @@ class @Problem
     if answered
       @enableSubmitButton true
       if data_changed
-        @saveNotificationArea.remove()
+        @saveNotification.remove()
     else
       @enableSubmitButton false, false
 
@@ -794,14 +800,12 @@ class @Problem
         .add(@saveButton)
         .add(@hintButton)
         .add(@showButton)
-        .removeClass('is-disabled')
         .removeAttr 'disabled'
     else
       @resetButton
         .add(@saveButton)
         .add(@hintButton)
         .add(@showButton)
-        .addClass('is-disabled')
         .attr({'disabled': 'disabled'})
 
     @enableSubmitButton enable, isFromCheckOperation
