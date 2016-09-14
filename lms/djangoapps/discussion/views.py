@@ -69,14 +69,15 @@ def get_threads(request, course, user_info, discussion_id=None, per_page=THREADS
     if something goes wrong, or ValueError if the group_id is invalid.
 
     Arguments:
-        request: The user request.
-        course: The course object.
-        user_info: The comment client User object as a dict.
-        discussion_id: Optional discussion id/commentable id for context.
-        per_page: Optional number of threads per page.
+        request (WSGIRequest): The user request.
+        course (CourseDescriptorWithMixins): The course object.
+        user_info (cc User as dict): The comment client User object as a dict.
+        discussion_id (str): Optional discussion id/commentable id for context.
+        per_page (int): Optional number of threads per page.
 
     Returns:
-        A tuple of the threads and the query parameters used for the search.
+        (tuple of list, dict): A tuple of the threads and the query parameters
+            used for the search.
 
     """
     default_query_params = {

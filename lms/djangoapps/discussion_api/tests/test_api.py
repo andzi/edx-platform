@@ -993,14 +993,14 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, SharedModuleSto
         """
         with self.assertRaises(ValidationError) as assertion:
             self.register_get_threads_response([], page=1, num_pages=0)
-            result = get_thread_list(
+            get_thread_list(
                 self.request,
                 self.course.id,
                 page=1,
                 page_size=11,
                 order_direction="asc",
             ).data
-        self.assertTrue("order_direction" in assertion.exception.message_dict)
+        self.assertIn("order_direction", assertion.exception.message_dict)
 
 
 @attr(shard=2)
