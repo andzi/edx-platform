@@ -77,7 +77,6 @@ def get_threads(request, course, user_info, discussion_id=None, per_page=THREADS
 
     Returns:
         A tuple of the threads and the query parameters used for the search.
-    :return:
 
     """
     default_query_params = {
