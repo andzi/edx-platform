@@ -987,6 +987,21 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, SharedModuleSto
             "per_page": ["11"],
         })
 
+    def test_invalid_order_direction(self):
+        """
+        Test with invalid order_direction (e.g. "asc")
+        """
+        with self.assertRaises(ValidationError) as assertion:
+            self.register_get_threads_response([], page=1, num_pages=0)
+            result = get_thread_list(
+                self.request,
+                self.course.id,
+                page=1,
+                page_size=11,
+                order_direction="asc",
+            ).data
+        self.assertTrue("order_direction" in assertion.exception.message_dict)
+
 
 @attr(shard=2)
 @ddt.ddt
