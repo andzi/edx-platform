@@ -914,7 +914,35 @@ class SubsectionHiddenAfterDueDateTest(UniqueCourseTest):
         self.assertEqual(self.progress_page.scores('Test Section 1', 'Test Subsection 1'), [(0, 1)])
 
 
-class ProgressPageTest(UniqueCourseTest):
+class ProgressPageBaseTest(UniqueCourseTest):
+    """
+    Provides utility methods for tests retrieving
+    scores from the progress page.
+    """
+    def _answer_problem_correctly(self):
+        """
+        Submit a correct answer to the problem.
+        """
+        self.courseware_page.go_to_sequential_position(1)
+        self.problem_page.click_choice('choice_choice_2')
+        self.problem_page.click_check()
+
+    def _get_section_score(self):
+        """
+        Return a list of scores from the progress page.
+        """
+        self.progress_page.visit()
+        return self.progress_page.section_score(self.SECTION_NAME, self.SUBSECTION_NAME)
+
+    def _get_scores(self):
+        """
+        Return a list of scores from the progress page.
+        """
+        self.progress_page.visit()
+        return self.progress_page.scores(self.SECTION_NAME, self.SUBSECTION_NAME)
+
+
+class ProgressPageTest(ProgressPageBaseTest):
     """
     Test that the progress page reports scores from completed assessments.
     """
@@ -970,44 +998,9 @@ class ProgressPageTest(UniqueCourseTest):
             self.assertEqual(self._get_scores(), [(1, 1)])
             self.assertEqual(self._get_section_score(), (1, 1))
 
-    def _answer_problem_correctly(self):
-        """
-        Submit a correct answer to the problem.
-        """
-        self.courseware_page.go_to_sequential_position(1)
-        self.problem_page.click_choice('choice_choice_2')
-        self.problem_page.click_check()
-
-    def _get_section_score(self):
-        """
-        Return a list of scores from the progress page.
-        """
-        self.progress_page.visit()
-        return self.progress_page.section_score(self.SECTION_NAME, self.SUBSECTION_NAME)
-
-    def _get_scores(self):
-        """
-        Return a list of scores from the progress page.
-        """
-        self.progress_page.visit()
-        return self.progress_page.scores(self.SECTION_NAME, self.SUBSECTION_NAME)
-
-    @contextmanager
-    def _logged_in_session(self, staff=False):
-        """
-        Ensure that the user is logged in and out appropriately at the beginning
-        and end of the current test.
-        """
-        self.logout_page.visit()
-        try:
-            _auto_auth(self.browser, self.USERNAME, self.EMAIL, False, self.course_id)
-            yield
-        finally:
-            self.logout_page.visit()
-
 
 @ddt.ddt
-class PersistentGradesTest(UniqueCourseTest):
+class PersistentGradesTest(ProgressPageBaseTest):
     """
         Test that the progress page reports scores from completed assessments.
         """
@@ -1053,37 +1046,6 @@ class PersistentGradesTest(UniqueCourseTest):
         # Auto-auth register for the course.
         _auto_auth(self.browser, self.USERNAME, self.EMAIL, False, self.course_id)
 
-    def test_progress_page_shows_scored_problems(self):
-        with self._logged_in_session():
-            self.assertEqual(self._get_scores(), [(0, 1)])
-            self.assertEqual(self._get_section_score(), (0, 1))
-            self.courseware_page.visit()
-            self._answer_problem_correctly()
-            self.assertEqual(self._get_scores(), [(1, 1)])
-            self.assertEqual(self._get_section_score(), (1, 1))
-
-    def _answer_problem_correctly(self):
-        """
-        Submit a correct answer to the problem.
-        """
-        self.courseware_page.go_to_sequential_position(1)
-        self.problem_page.click_choice('choice_choice_2')
-        self.problem_page.click_check()
-
-    def _get_section_score(self):
-        """
-        Return a list of scores from the progress page.
-        """
-        self.progress_page.visit()
-        return self.progress_page.section_score(self.SECTION_NAME, self.SUBSECTION_NAME)
-
-    def _get_scores(self):
-        """
-        Return a list of scores from the progress page.
-        """
-        self.progress_page.visit()
-        return self.progress_page.scores(self.SECTION_NAME, self.SUBSECTION_NAME)
-
     @contextmanager
     def _logged_in_session(self, staff=False):
         """
@@ -1100,10 +1062,11 @@ class PersistentGradesTest(UniqueCourseTest):
         finally:
             self.logout_page.visit()
 
-    def _add_problem_to_subsection(self):
+    def _change_subsection_structure(self):
         with self._logged_in_session(staff=True):
             self.course_outline.visit()
             subsection = self.course_outline.section(self.SECTION_NAME).subsection(self.SUBSECTION_NAME)
+            subsection.expand_subsection()
             subsection.add_unit()
 
     def _make_content_hidden(self):
@@ -1113,9 +1076,13 @@ class PersistentGradesTest(UniqueCourseTest):
     def _change_weight_for_problem(self):
         with self._logged_in_session(staff=True):
             self.course_outline.visit()
-            subsection = self.course_outline.section(self.SECTION_NAME).subsection(self.SUBSECTION_NAME)
-            unit = subsection.units()[0].go_to()
-            component_editor = ComponentEditorView(self.browser, unit.locator)
+            self.course_outline.section_at(0).subsection_at(0).expand_subsection()
+            unit = self.course_outline.section_at(0).subsection_at(0).unit(self.UNIT_NAME).go_to()
+            container = unit.xblocks[0].go_to_container()
+            component = container.xblocks[0].children[0]
+
+            component.edit()
+            component_editor = ComponentEditorView(self.browser, component.locator)
             component_editor.set_field_value_and_save('Problem Weight', 5)
 
     def _rescore_for_all(self):
@@ -1127,17 +1094,16 @@ class PersistentGradesTest(UniqueCourseTest):
             self.course_outline.visit()
             self.course_outline.section_at(0).subsection_at(0).expand_subsection()
             unit = self.course_outline.section_at(0).subsection_at(0).unit(self.UNIT_NAME).go_to()
-            container = unit.xblocks[0].go_to_container()
-            component = container.xblocks[0].children[0]
+            component = unit.xblocks[0].children[0]
             component.edit()
 
             modified_content = "<p>modified content</p>"
             html_editor = HtmlComponentEditorView(self.browser, component.locator)
-            html_editor.set_content_and_save(modified_content, raw=False)
+            html_editor.set_content_and_save(modified_content, raw=True)
 
     @ddt.data(
         _edit_problem_content,
-        _add_problem_to_subsection,
+        _change_subsection_structure,
         _change_weight_for_problem
     )
     def test_content_changes_do_not_change_score(self, edit):
