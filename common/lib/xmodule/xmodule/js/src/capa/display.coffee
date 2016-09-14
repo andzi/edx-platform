@@ -456,7 +456,6 @@ class @Problem
       if response.success
         @el.trigger('contentChanged', [@id, response.html])
         @render(response.html, @focus_on_save_notification)
-        @updateProgress response
       else
         @gentle_alert saveMessage
 
@@ -492,7 +491,7 @@ class @Problem
       element.CodeMirror.save() if element.CodeMirror.save
     @answers = @inputs.serialize()
 
-  submitAnswersAndSubmitButton: (bind=false, data_changed=false) =>
+  submitAnswersAndSubmitButton: (bind=false) =>
     """
     Used to check available answers and if something is checked (or the answer is set in some textbox)
     "Submit" button becomes enabled. Otherwise it is disabled by default.
@@ -500,10 +499,7 @@ class @Problem
     Arguments:
       bind (bool): used on the first check to attach event handlers to input fields
        to change "Submit" enable status in case of some manipulations with answers
-
-      data_changed (bool): True when a change in the problem entry fields is detected.
     """
-
     answered = true
 
     at_least_one_text_input_found = false
@@ -515,7 +511,8 @@ class @Problem
           one_text_input_filled = true
         if bind
           $(text_field).on 'input', (e) =>
-            @submitAnswersAndSubmitButton false, true
+            @saveNotification.remove()
+            @submitAnswersAndSubmitButton()
             return
           return
     if at_least_one_text_input_found and not one_text_input_filled
@@ -528,7 +525,8 @@ class @Problem
           checked = true
         if bind
           $(checkbox_or_radio).on 'click', (e) =>
-            @submitAnswersAndSubmitButton false, true
+            @saveNotification.remove()
+            @submitAnswersAndSubmitButton()
             return
           return
       if not checked
@@ -541,14 +539,13 @@ class @Problem
         answered = false
       if bind
         $(select_field).on 'change', (e) =>
-          @submitAnswersAndSubmitButton false, true
+          @saveNotification.remove()
+          @submitAnswersAndSubmitButton()
           return
         return
 
     if answered
       @enableSubmitButton true
-      if data_changed
-        @saveNotification.remove()
     else
       @enableSubmitButton false, false
 

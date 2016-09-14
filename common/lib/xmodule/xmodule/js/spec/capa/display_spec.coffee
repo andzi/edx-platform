@@ -724,23 +724,6 @@ describe 'Problem', ->
       expect($.postWithPrefix).toHaveBeenCalledWith '/problem/Problem1/problem_save',
           'foo=1&bar=2', jasmine.any(Function)
 
-    it 'reads the save message', (done) ->
-      deferred = $.Deferred()
-      curr_html = @problem.el.html()
-
-      runs = ->
-        spyOn($, 'postWithPrefix').and.callFake (url, answers, callback) ->
-          promise = undefined
-          callback(success: 'correct', html: curr_html)
-          promise = always: (callable) ->
-            callable()
-        @problem.save()
-        if jQuery.active == 0
-          deferred.resolve()
-        deferred.promise()
-
-      runs.call(this).always done
-
     it 'tests if all the buttons are disabled and the text of submit button does not change while saving.', (done) ->
       deferred = $.Deferred()
       self = this
