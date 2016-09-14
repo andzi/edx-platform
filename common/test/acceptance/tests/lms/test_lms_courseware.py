@@ -14,9 +14,10 @@ from capa.tests.response_xml_factory import MultipleChoiceResponseXMLFactory
 from ..helpers import UniqueCourseTest, EventsTestMixin
 from ...pages.studio.auto_auth import AutoAuthPage
 from ...pages.lms.create_mode import ModeCreationPage
-from ...pages.studio.component_editor import ComponentEditorView, ComponentVisibilityEditorView
+from ...pages.studio.component_editor import ComponentEditorView
 from ...pages.studio.html_component_editor import HtmlComponentEditorView
-from ...pages.studio.overview import CourseOutlinePage, CourseOutlineChild
+from ...pages.studio.overview import CourseOutlinePage
+from ...pages.studio.utils import type_in_codemirror
 from ...pages.lms.courseware import CoursewarePage, CoursewareSequentialTabPage
 from ...pages.lms.course_nav import CourseNavPage
 from ...pages.lms.problem import ProblemPage
@@ -1094,12 +1095,14 @@ class PersistentGradesTest(ProgressPageBaseTest):
             self.course_outline.visit()
             self.course_outline.section_at(0).subsection_at(0).expand_subsection()
             unit = self.course_outline.section_at(0).subsection_at(0).unit(self.UNIT_NAME).go_to()
-            component = unit.xblocks[0].children[0]
-            component.edit()
+            component = unit.xblocks[1]
+            edit_view = component.edit()
 
             modified_content = "<p>modified content</p>"
-            html_editor = HtmlComponentEditorView(self.browser, component.locator)
-            html_editor.set_content_and_save(modified_content, raw=True)
+            # Set content in the CodeMirror editor.
+            type_in_codemirror(self, 0, modified_content)
+
+            edit_view.q(css='.action-save').click()
 
     @ddt.data(
         _edit_problem_content,
