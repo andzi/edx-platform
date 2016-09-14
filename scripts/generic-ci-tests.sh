@@ -99,7 +99,7 @@ case "$TEST_SUITE" in
         ;;
 
     "lms-unit")
-        PAVER_ARGS="--with-flaky --processes=-1 --cov-args='--debug=dataio' -v --with-xunitmp"
+        PAVER_ARGS="--with-flaky --processes=-1 --cov-args='--parallel --debug=dataio' -v --with-xunitmp"
         case "$SHARD" in
             "all")
                 paver test_system -s lms $PAVER_ARGS

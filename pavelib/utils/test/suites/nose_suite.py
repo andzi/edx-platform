@@ -58,6 +58,7 @@ class NoseTestSuite(TestSuite):
         altered to be run under coverage. It returns the command
         unaltered otherwise.
         """
+        print 'DEBUG: cov_args value is [{}]'.format(self.cov_args)
         if self.run_under_coverage:
             # We use "python -m coverage" so that the proper python
             # will run the importable coverage rather than the
