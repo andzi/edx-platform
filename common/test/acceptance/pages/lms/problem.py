@@ -156,7 +156,7 @@ class ProblemPage(PageObject):
 
     def is_save_button_enabled(self):
         """ Check for the visibility of the Save button """
-        return not self.q(css='.problem .submit').attrs('disabled')
+        return not self.q(css='.action .save').attrs('disabled') is None
 
     def is_focus_on_problem_meta(self):
         """
