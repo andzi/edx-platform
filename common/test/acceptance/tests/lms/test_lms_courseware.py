@@ -1070,9 +1070,12 @@ class PersistentGradesTest(ProgressPageBaseTest):
             subsection.expand_subsection()
             subsection.add_unit()
 
-    def _make_content_hidden(self):
+    def _set_staff_lock_on_subsection(self, locked):
         with self._logged_in_session(staff=True):
-            pass
+            self.course_outline.visit()
+            subsection = self.course_outline.section_at(0).subsection_at(0)
+            subsection.set_staff_lock(locked)
+            self.assertEqual(subsection.has_staff_lock_warning, locked)
 
     def _change_weight_for_problem(self):
         with self._logged_in_session(staff=True):
@@ -1107,7 +1110,8 @@ class PersistentGradesTest(ProgressPageBaseTest):
     @ddt.data(
         _edit_problem_content,
         _change_subsection_structure,
-        _change_weight_for_problem
+        _change_weight_for_problem,
+        _rescore_for_all
     )
     def test_content_changes_do_not_change_score(self, edit):
         with self._logged_in_session():
@@ -1119,6 +1123,27 @@ class PersistentGradesTest(ProgressPageBaseTest):
             self.assertEqual(self._get_section_score(), (1, 1))
 
         edit(self)
+
+        with self._logged_in_session():
+            self.assertEqual(self._get_scores(), [(1, 1)])
+            self.assertEqual(self._get_section_score(), (1, 1))
+
+    def test_staff_lock(self):
+        with self._logged_in_session():
+            self.assertEqual(self._get_scores(), [(0, 1)])
+            self.assertEqual(self._get_section_score(), (0, 1))
+            self.courseware_page.visit()
+            self._answer_problem_correctly()
+            self.assertEqual(self._get_scores(), [(1, 1)])
+            self.assertEqual(self._get_section_score(), (1, 1))
+
+        self._set_staff_lock_on_subsection(True)
+
+        with self._logged_in_session():
+            self.assertEqual(self._get_scores(), None)
+            self.assertEqual(self._get_section_score(), None)
+
+        self._set_staff_lock_on_subsection(False)
 
         with self._logged_in_session():
             self.assertEqual(self._get_scores(), [(1, 1)])
